@@ -1,0 +1,54 @@
+# Visual Studio
+.vs/
+*.user.css
+*.sln.user
+*.vcproj.user
+
+# Build results and compiled files
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+obj/
+bin/
+
+# .NET
+*.dll
+*.exe
+*.obj
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.vsix
+*.vsixdensity
+
+# NuGet
+packages/
+*.nuget.props
+*.nuget.targets
+.nuget/
+obj/
+
+# Test results
+[TestRr]esults/
+[Tt]est[Rr]esults/
+TestResults/
+*.testresult
+*.mstest
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS-generated files
+.DS_Store
+Thumbs.db
