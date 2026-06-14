@@ -1,3 +1,6 @@
+
+using System.Text.Json.Serialization;
+
 namespace AutoServiceApp.Models;
 
 public class RepairOrder : BaseEntity
@@ -10,14 +13,20 @@ public class RepairOrder : BaseEntity
     [System.Text.Json.Serialization.JsonIgnore]
     public Car? Car { get; set; }
     public string ProblemDescription { get; set; } = "";
-    public string Status { get; set; } = "New";
+
+    [JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+    public OrderStatus Status { get; set; } = OrderStatus.New;
+
     public string AssignedMechanicId { get; set; } = "";
     [System.Text.Json.Serialization.JsonIgnore]
     public Mechanic? AssignedMechanic { get; set; }
     public DateTime AcceptedAt { get; set; } = DateTime.Now;
     public DateTime? CompletedAt { get; set; }
     public decimal Cost { get; set; }
-    public string PaymentMethod { get; set; } = "cash";
+
+    [JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+
     public List<RepairWork> Works { get; set; } = new();
     public List<string> UsedPartIds { get; set; } = new();
     public List<string> StatusHistory { get; set; } = new();

@@ -1,3 +1,4 @@
+Task3\AutoServiceApp\Services\AutoServiceManager.cs
 using System.Text;
 using AutoServiceApp.Helpers;
 using AutoServiceApp.Models;
@@ -192,7 +193,7 @@ public class AutoServiceManager
         SaveAll();
     }
 
-    public RepairOrder CreateOrder(Customer? customer, Car? car, string description, Mechanic? mechanic, string status, string paymentMethod)
+    public RepairOrder CreateOrder(Customer? customer, Car? car, string description, Mechanic? mechanic, OrderStatus status, PaymentMethod paymentMethod)
     {
         var order = new RepairOrder
         {
@@ -216,7 +217,7 @@ public class AutoServiceManager
         return order;
     }
 
-    public void UpdateOrder(RepairOrder order, Customer? customer, Car? car, string description, Mechanic? mechanic, string status, decimal cost, string paymentMethod)
+    public void UpdateOrder(RepairOrder order, Customer? customer, Car? car, string description, Mechanic? mechanic, OrderStatus status, decimal cost, PaymentMethod paymentMethod)
     {
         order.CustomerId = customer?.Id ?? "";
         order.CarId = car?.Id ?? "";
@@ -228,16 +229,16 @@ public class AutoServiceManager
         order.PaymentMethod = paymentMethod;
         order.Cost = cost;
         if (order.Status != status)
-            ChangeOrderStatus(order, status, "both");
+            ChangeOrderStatus(order, status, NotificationType.Both);
         RelinkEverything();
         SaveAll();
     }
 
-    public void ChangeOrderStatus(RepairOrder order, string newStatus, string notificationType)
+    public void ChangeOrderStatus(RepairOrder order, OrderStatus newStatus, NotificationType notificationType)
     {
         _selectedOrder = order;
         StatusHelper.MarkStatus(order, newStatus);
-        if (newStatus == "Ready")
+        if (newStatus == OrderStatus.Ready)
             order.Cost = CalculateOrderCost(order, true, order.PaymentMethod);
         if (order.AssignedMechanic != null && !order.AssignedMechanic.AssignedOrderIds.Contains(order.Id))
             order.AssignedMechanic.AssignedOrderIds.Add(order.Id);
@@ -268,16 +269,16 @@ public class AutoServiceManager
         return true;
     }
 
-    public decimal CalculateOrderCost(RepairOrder order, bool final, string paymentMethod)
+    public decimal CalculateOrderCost(RepairOrder order, bool final, PaymentMethod paymentMethod)
     {
         var works = order.Works.Sum(x => x.Cost + (decimal)x.Hours * (order.AssignedMechanic?.HourRate ?? 0));
         var parts = order.UsedPartIds.Select(id => Parts.FirstOrDefault(p => p.Id == id)).Where(p => p != null).Sum(p => p!.Price * 1.20m);
         var result = works + parts;
-        if (paymentMethod == "card")
+        if (paymentMethod == PaymentMethod.Card)
             result += result * 0.05m;
         if (order.Customer != null && order.Customer.Cars.Count > 2)
             result -= result * 0.10m;
-        if (final && order.Status == "Ready")
+        if (final && order.Status == OrderStatus.Ready)
             result += 500;
         if (result > 10000)
             _tempDiscount = result * 0.15m;
@@ -323,14 +324,14 @@ public class AutoServiceManager
         return result;
     }
 
-    public void NotifyAboutStatus(RepairOrder order, string type)
+    public void NotifyAboutStatus(RepairOrder order, NotificationType type)
     {
         var phone = order.Customer?.Phone ?? "";
         var email = order.Customer?.Email ?? "";
         var text = $"Order {order.OrderNumber}: new status {order.Status}";
-        if (type == "sms")
+        if (type == NotificationType.Sms)
             SmsNotifier.SendSms(phone, text);
-        else if (type == "email")
+        else if (type == NotificationType.Email)
             EmailSender.Send(email, "Order status", text);
         else
         {
@@ -350,7 +351,7 @@ public class AutoServiceManager
         AddMechanic("Owen Lane", "electrical", 1500);
         AddPart("Oil filter", "OF-100", 650, 12);
         AddPart("Brake pads", "BR-500", 3200, 5);
-        var order = CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, "Diagnostics", "card");
+        var order = CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, OrderStatus.Diagnostics, PaymentMethod.Card);
         AddWorkToOrder(order, "Computer diagnostics", 1.5, 2500);
         SaveAll();
     }
