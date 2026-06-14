@@ -15,10 +15,10 @@ public class AutoServiceManager
     public List<Mechanic> Mechanics { get; set; } = new();
     public List<string> Notifications { get; set; } = new();
 
-    public RepairOrder? _selectedOrder;
-    public Part? _selectedPart;
-    public decimal _tempDiscount;
-    public BaseReport? _currentReport;
+    private RepairOrder? _selectedOrder;
+    private Part? _selectedPart;
+    private decimal _tempDiscount;
+    private BaseReport? _currentReport;
 
     public JsonFileStore<Customer> CustomerStore { get; set; } = new();
     public JsonFileStore<Car> CarStore { get; set; } = new();
