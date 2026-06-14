@@ -1,4 +1,3 @@
-Task3\AutoServiceApp.Tests\ManagerTests.cs
 using AutoServiceApp.Models;
 using AutoServiceApp.Services;
 using AutoServiceApp.Storage;
