@@ -80,84 +80,18 @@ public class AutoServiceManager
             mechanic.AssignedOrderIds = Orders.Where(x => x.AssignedMechanicId == mechanic.Id).Select(x => x.Id).ToList();
     }
 
-    public Customer AddCustomer(string name, string phone, string email, string address)
-        => CustomerService.AddCustomer(name, phone, email, address);
-
-    public void UpdateCustomer(Customer customer, string name, string phone, string email, string address)
-        => CustomerService.UpdateCustomer(customer, name, phone, email, address);
-
-    public void DeleteCustomer(Customer customer)
-        => CustomerService.DeleteCustomer(customer);
-
-    public Car AddCar(Customer? owner, string make, string model, int year, string vin, int mileage, string licensePlate)
-        => CustomerService.AddCar(owner, make, model, year, vin, mileage, licensePlate);
-
-    public void UpdateCar(Car car, Customer? owner, string make, string model, int year, string vin, int mileage, string licensePlate)
-        => CustomerService.UpdateCar(car, owner, make, model, year, vin, mileage, licensePlate);
-
-    public void DeleteCar(Car car)
-        => CustomerService.DeleteCar(car);
-
-    public Mechanic AddMechanic(string name, string specialization, decimal hourRate)
-        => MechanicService.AddMechanic(name, specialization, hourRate);
-
-    public void UpdateMechanic(Mechanic mechanic, string name, string specialization, decimal hourRate)
-        => MechanicService.UpdateMechanic(mechanic, name, specialization, hourRate);
-
-    public void DeleteMechanic(Mechanic mechanic)
-        => MechanicService.DeleteMechanic(mechanic);
-
-    public Part AddPart(string name, string article, decimal price, int stock)
-        => PartService.AddPart(name, article, price, stock);
-
-    public void UpdatePart(Part part, string name, string article, decimal price, int stock)
-        => PartService.UpdatePart(part, name, article, price, stock);
-
-    public void DeletePart(Part part)
-        => PartService.DeletePart(part);
-
-    public RepairOrder CreateOrder(Customer? customer, Car? car, string description, Mechanic? mechanic, OrderStatus status, PaymentMethod paymentMethod)
-        => OrderService.CreateOrder(customer, car, description, mechanic, status, paymentMethod);
-
-    public void UpdateOrder(RepairOrder order, Customer? customer, Car? car, string description, Mechanic? mechanic, OrderStatus status, decimal cost, PaymentMethod paymentMethod)
-        => OrderService.UpdateOrder(order, customer, car, description, mechanic, status, cost, paymentMethod);
-
-    public void ChangeOrderStatus(RepairOrder order, OrderStatus newStatus, NotificationType notificationType)
-        => OrderService.ChangeOrderStatus(order, newStatus, notificationType);
-
-    public void AddWorkToOrder(RepairOrder order, string name, double hours, decimal cost)
-        => OrderService.AddWorkToOrder(order, name, hours, cost);
-
-    public bool UsePartForOrder(RepairOrder order, Part part, int qty)
-        => OrderService.UsePartForOrder(order, part, qty);
-
-    public decimal CalculateOrderCost(RepairOrder order, bool final, PaymentMethod paymentMethod)
-        => OrderService.CalculateOrderCost(order, final, paymentMethod);
-
-    public string BuildOrderDetails(RepairOrder order)
-        => OrderService.BuildOrderDetails(order);
-
-    public string BuildReports(DateTime from, DateTime to)
-        => OrderService.BuildReports(from, to);
-
-    public List<RepairOrder> GetOrdersForMechanic(Mechanic mechanic)
-        => OrderService.GetOrdersForMechanic(mechanic);
-
-    public void NotifyAboutStatus(RepairOrder order, NotificationType type)
-        => OrderService.NotifyAboutStatus(order, type);
-
     private void Seed()
     {
-        var c1 = AddCustomer("John Parker", "+1 555 100-20-30", "john@example.com", "12 Market Street");
-        var c2 = AddCustomer("Anna Stone", "+1 555 555-44-33", "anna@example.com", "45 Lake Avenue");
-        var car1 = AddCar(c1, "Toyota", "Camry", 2018, "JTNB11HK303000001", 87000, "ABC123");
-        AddCar(c2, "Kia", "Rio", 2021, "Z94CB41ABMR000002", 43000, "MOR777");
-        var m1 = AddMechanic("Sam Miller", "engine", 1200);
-        AddMechanic("Owen Lane", "electrical", 1500);
-        AddPart("Oil filter", "OF-100", 650, 12);
-        AddPart("Brake pads", "BR-500", 3200, 5);
-        var order = CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, OrderStatus.Diagnostics, PaymentMethod.Card);
-        AddWorkToOrder(order, "Computer diagnostics", 1.5, 2500);
+        var c1 = CustomerService.AddCustomer("John Parker", "+1 555 100-20-30", "john@example.com", "12 Market Street");
+        var c2 = CustomerService.AddCustomer("Anna Stone", "+1 555 555-44-33", "anna@example.com", "45 Lake Avenue");
+        var car1 = CustomerService.AddCar(c1, "Toyota", "Camry", 2018, "JTNB11HK303000001", 87000, "ABC123");
+        CustomerService.AddCar(c2, "Kia", "Rio", 2021, "Z94CB41ABMR000002", 43000, "MOR777");
+        var m1 = MechanicService.AddMechanic("Sam Miller", "engine", 1200);
+        MechanicService.AddMechanic("Owen Lane", "electrical", 1500);
+        PartService.AddPart("Oil filter", "OF-100", 650, 12);
+        PartService.AddPart("Brake pads", "BR-500", 3200, 5);
+        var order = OrderService.CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, OrderStatus.Diagnostics, PaymentMethod.Card);
+        OrderService.AddWorkToOrder(order, "Computer diagnostics", 1.5, 2500);
         SaveAll();
     }
 

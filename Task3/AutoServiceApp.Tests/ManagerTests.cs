@@ -11,8 +11,8 @@ public class ManagerTests
     {
         var manager = CreateManager();
 
-        var customer = manager.AddCustomer("Jane Driver", "555-1000", "jane@example.com", "1 Main Street");
-        var car = manager.AddCar(customer, "Ford", "Focus", 2019, "VIN123", 42000, "CAR123");
+        var customer = manager.CustomerService.AddCustomer("Jane Driver", "555-1000", "jane@example.com", "1 Main Street");
+        var car = manager.CustomerService.AddCar(customer, "Ford", "Focus", 2019, "VIN123", 42000, "CAR123");
 
         Assert.Single(manager.Customers);
         Assert.Single(manager.Cars);
@@ -25,11 +25,11 @@ public class ManagerTests
     public void CreateOrderStoresHistoryAndMechanicAssignment()
     {
         var manager = CreateManager();
-        var customer = manager.AddCustomer("Mark Owner", "555-2000", "mark@example.com", "2 Center Road");
-        var car = manager.AddCar(customer, "Honda", "Civic", 2020, "VIN456", 18000, "CIV456");
-        var mechanic = manager.AddMechanic("Alex Smith", "engine", 100);
+        var customer = manager.CustomerService.AddCustomer("Mark Owner", "555-2000", "mark@example.com", "2 Center Road");
+        var car = manager.CustomerService.AddCar(customer, "Honda", "Civic", 2020, "VIN456", 18000, "CIV456");
+        var mechanic = manager.MechanicService.AddMechanic("Alex Smith", "engine", 100);
 
-        var order = manager.CreateOrder(customer, car, "Oil leak", mechanic, OrderStatus.Diagnostics, PaymentMethod.Cash);
+        var order = manager.OrderService.CreateOrder(customer, car, "Oil leak", mechanic, OrderStatus.Diagnostics, PaymentMethod.Cash);
 
         Assert.Equal(OrderStatus.Diagnostics, order.Status);
         Assert.Equal(customer.Id, order.CustomerId);
@@ -42,15 +42,15 @@ public class ManagerTests
     public void ChangeOrderStatusCalculatesCostAndSendsNotifications()
     {
         var manager = CreateManager();
-        var customer = manager.AddCustomer("Nina Client", "555-3000", "nina@example.com", "3 North Street");
-        var car = manager.AddCar(customer, "Mazda", "3", 2017, "VIN789", 99000, "MAZ789");
-        var mechanic = manager.AddMechanic("Chris Hall", "electrical", 200);
-        var part = manager.AddPart("Sensor", "SN-1", 100, 4);
-        var order = manager.CreateOrder(customer, car, "Check warning light", mechanic, OrderStatus.Diagnostics, PaymentMethod.Card);
+        var customer = manager.CustomerService.AddCustomer("Nina Client", "555-3000", "nina@example.com", "3 North Street");
+        var car = manager.CustomerService.AddCar(customer, "Mazda", "3", 2017, "VIN789", 99000, "MAZ789");
+        var mechanic = manager.MechanicService.AddMechanic("Chris Hall", "electrical", 200);
+        var part = manager.PartService.AddPart("Sensor", "SN-1", 100, 4);
+        var order = manager.OrderService.CreateOrder(customer, car, "Check warning light", mechanic, OrderStatus.Diagnostics, PaymentMethod.Card);
 
-        manager.AddWorkToOrder(order, "Scanner diagnostics", 2, 300);
-        Assert.True(manager.UsePartForOrder(order, part, 1));
-        manager.ChangeOrderStatus(order, OrderStatus.Ready, NotificationType.Both);
+        manager.OrderService.AddWorkToOrder(order, "Scanner diagnostics", 2, 300);
+        Assert.True(manager.OrderService.UsePartForOrder(order, part, 1));
+        manager.OrderService.ChangeOrderStatus(order, OrderStatus.Ready, NotificationType.Both);
 
         Assert.Equal(OrderStatus.Ready, order.Status);
         Assert.NotNull(order.CompletedAt);
@@ -64,12 +64,12 @@ public class ManagerTests
     public void UsePartReturnsFalseWhenStockIsTooLow()
     {
         var manager = CreateManager();
-        var customer = manager.AddCustomer("Low Stock", "555-4000", "low@example.com", "4 South Street");
-        var car = manager.AddCar(customer, "Nissan", "Leaf", 2022, "VIN000", 12000, "EV100");
-        var order = manager.CreateOrder(customer, car, "Noise", null, OrderStatus.New, PaymentMethod.Cash);
-        var part = manager.AddPart("Battery clamp", "BC-1", 25, 1);
+        var customer = manager.CustomerService.AddCustomer("Low Stock", "555-4000", "low@example.com", "4 South Street");
+        var car = manager.CustomerService.AddCar(customer, "Nissan", "Leaf", 2022, "VIN000", 12000, "EV100");
+        var order = manager.OrderService.CreateOrder(customer, car, "Noise", null, OrderStatus.New, PaymentMethod.Cash);
+        var part = manager.PartService.AddPart("Battery clamp", "BC-1", 25, 1);
 
-        var used = manager.UsePartForOrder(order, part, 2);
+        var used = manager.OrderService.UsePartForOrder(order, part, 2);
 
         Assert.False(used);
         Assert.Equal(1, part.Stock);
@@ -80,11 +80,11 @@ public class ManagerTests
     public void DeleteCarRemovesCustomerLinkAndRelatedOrders()
     {
         var manager = CreateManager();
-        var customer = manager.AddCustomer("Delete Car", "555-4100", "delete@example.com", "41 Garage Road");
-        var car = manager.AddCar(customer, "Volkswagen", "Golf", 2015, "VINDEL", 71000, "DEL123");
-        var order = manager.CreateOrder(customer, car, "Remove with car", null, OrderStatus.New, PaymentMethod.Cash);
+        var customer = manager.CustomerService.AddCustomer("Delete Car", "555-4100", "delete@example.com", "41 Garage Road");
+        var car = manager.CustomerService.AddCar(customer, "Volkswagen", "Golf", 2015, "VINDEL", 71000, "DEL123");
+        var order = manager.OrderService.CreateOrder(customer, car, "Remove with car", null, OrderStatus.New, PaymentMethod.Cash);
 
-        manager.DeleteCar(car);
+        manager.CustomerService.DeleteCar(car);
 
         Assert.DoesNotContain(manager.Cars, x => x.Id == car.Id);
         Assert.DoesNotContain(customer.Cars, x => x.Id == car.Id);
@@ -95,14 +95,14 @@ public class ManagerTests
     public void ReportsContainRevenueWorkloadAndStockSections()
     {
         var manager = CreateManager();
-        var customer = manager.AddCustomer("Report Client", "555-5000", "report@example.com", "5 West Street");
-        var car = manager.AddCar(customer, "Subaru", "Outback", 2016, "VIN111", 110000, "SUB111");
-        var mechanic = manager.AddMechanic("Dana Ray", "transmission", 150);
-        manager.AddPart("Gasket", "GS-1", 15, 2);
-        var order = manager.CreateOrder(customer, car, "Service", mechanic, OrderStatus.Ready, PaymentMethod.Cash);
-        manager.AddWorkToOrder(order, "Inspection", 1, 80);
+        var customer = manager.CustomerService.AddCustomer("Report Client", "555-5000", "report@example.com", "5 West Street");
+        var car = manager.CustomerService.AddCar(customer, "Subaru", "Outback", 2016, "VIN111", 110000, "SUB111");
+        var mechanic = manager.MechanicService.AddMechanic("Dana Ray", "transmission", 150);
+        manager.PartService.AddPart("Gasket", "GS-1", 15, 2);
+        var order = manager.OrderService.CreateOrder(customer, car, "Service", mechanic, OrderStatus.Ready, PaymentMethod.Cash);
+        manager.OrderService.AddWorkToOrder(order, "Inspection", 1, 80);
 
-        var report = manager.BuildReports(DateTime.Today.AddDays(-1), DateTime.Today.AddDays(1));
+        var report = manager.OrderService.BuildReports(DateTime.Today.AddDays(-1), DateTime.Today.AddDays(1));
 
         Assert.Contains("Revenue for period", report);
         Assert.Contains("Popular services", report);
